@@ -9,12 +9,9 @@ const connect = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to MongoDB');
 
-    await runQuieries();
+    await menu();
 
-    await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
 
-    process.exit();
 }
 
 const menu = async () => {
@@ -34,19 +31,24 @@ const menu = async () => {
     switch (choice) {
         case "1":
             await createCustomer();
+            break;
         case "2":
             await viewCustomers();
+            break;
         case "3":
             await updateCustomer();
+            break;
         case "4":
             await deleteCustomer();
+            breakl
         case "5":
+            await mongoose.disconnect();
+            console.log('Disconnected from MongoDB');
+            process.exit();
     }
 }
 
 
-
-// const username = prompt('What is your name? ');
 
 const createCustomer = async () => {
     const name = prompt("Enter customer name: ");
@@ -57,13 +59,16 @@ const createCustomer = async () => {
         age: age
     };
     const customer = await Customer.create(customerData);
-    console.log();
+    console.log(customer);
+    setTimeout(async () => { await menu(); }, 1000); // choose next action
 
 }
 
-const viewCustomer = async () => {
+const viewCustomers = async () => {
     const customers = await Customer.find({});
     console.log(customers);
+
+    setTimeout(async () => { await menu(); }, 1000); // choose next action
 }
 
 
@@ -72,23 +77,44 @@ const updateCustomer = async () => {
     console.log(`Below is a list of of customers:
         ${customers} 
         `)
-    const askId = prompt("Copy and paste the id of the customer you would like to update here: ")
-    const updatedCustomer = await Customer.findById(askId);
-    console.log(`# user inputs ${askId}`);
 
-    const newName = prompt("What is the customers new name?");
+    const askedId = prompt("Copy and paste the id of the customer you would like to update here: ")
+    console.log(`# user inputs ${askedId}`);
+
+
+    const newName = prompt("What is the customers new name? ");
     console.log(`# user inputs ${newName}`);
-    updatedCustomer.name = newName;
 
-    const newAge = prompt("What is the customers new age?");
-    updatedCustomer.age = newAge;
+    const newAge = prompt("What is the customers new age? ");
     console.log(`# user inputs ${newAge}`);
 
-    await updatedCustomer.save();
+    const updatedCustomer = await Customer.findByIdAndUpdate(
+        askedId,
+        {
+            name: newName,
+            age: newAge
+        },
+        { new: true }
+    );
+
+    console.log("updated Customer: ", updatedCustomer) // viewing updated customers
+
+    setTimeout(async () => { await menu(); }, 1000); // choose next action
 
 }
-// console.log(`# user inputs {choice}`)
 
-// console.log(`Your name is ${username}`);
+const deleteCustomer = async () => {
+    const customers = await Customer.find({});
+    console.log(`Below is a list of of customers:
+        ${customers} 
+        `);
 
-menu();
+    const askedId = prompt("Copy and paste the id of the customer you would like to delete here: ")
+    console.log(`# user inputs ${askedId}`);
+
+    const removedCustomer = await Customer.findByIdAndDelete(askedId);
+
+    setTimeout(async () => { await menu(); }, 1000); // choose next action
+}
+
+connect();
