@@ -66,9 +66,12 @@ const createCustomer = async () => {
 
 const viewCustomers = async () => {
     const customers = await Customer.find({});
-    customers.forEach(customer => {
+    if (customers.length === 0) {
+        console.log("There are no customers in the database yet.")
+        return;
+    } else {customers.forEach(customer => {
         console.log(`id: ${customer._id} -- Name: ${customer.name}, Age: ${customer.age}`);
-    })
+    })};
 
     setTimeout(async () => { await menu(); }, 2000); // choose next action
 }
