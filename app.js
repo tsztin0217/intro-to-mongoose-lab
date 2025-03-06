@@ -7,17 +7,14 @@ const prompt = require('prompt-sync')();
 
 const connect = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('Connected to MongoDB');
-
+    console.log(`
+        Welcome to CRM`);
     await menu();
-
-
 }
 
 const menu = async () => {
-    console.log(`
-        Welcome to the CRM
-
+    console.log(
+        `
         What would you like to do?
         
         1. Create a customer
@@ -25,6 +22,7 @@ const menu = async () => {
         3. Update a customer
         4. Delete a customer
         5. quit
+
         `);
     const choice = prompt('Number of action to run: ');
     console.log(`# user inputs ${choice}`);
@@ -40,14 +38,13 @@ const menu = async () => {
             break;
         case "4":
             await deleteCustomer();
-            breakl
+            break;
         case "5":
-            await mongoose.disconnect();
-            console.log('Disconnected from MongoDB');
+            mongoose.connection.close()
+            console.log('exiting...');
             process.exit();
     }
 }
-
 
 
 const createCustomer = async () => {
@@ -59,24 +56,28 @@ const createCustomer = async () => {
         age: age
     };
     const customer = await Customer.create(customerData);
-    console.log(customer);
-    setTimeout(async () => { await menu(); }, 1000); // choose next action
+    console.log("creating...");
+    setTimeout(() => { 
+        console.log(`\nNewly created customer:\n\nid: ${customer._id} -- Name: ${customer.name}, Age: ${customer.age}`) 
+    }, 1000);
+    setTimeout(async () => { await menu(); }, 2000); // choose next action
 
 }
 
 const viewCustomers = async () => {
     const customers = await Customer.find({});
-    console.log(customers);
+    customers.forEach(customer => {
+        console.log(`id: ${customer._id} -- Name: ${customer.name}, Age: ${customer.age}`);
+    })
 
-    setTimeout(async () => { await menu(); }, 1000); // choose next action
+    setTimeout(async () => { await menu(); }, 2000); // choose next action
 }
 
 
 const updateCustomer = async () => {
     const customers = await Customer.find({});
-    console.log(`Below is a list of of customers:
-        ${customers} 
-        `)
+    console.log("Below is a list of customers:")
+    customers.forEach(customer => console.log(`id: ${customer._id} -- Name: ${customer.name}, Age: ${customer.age}`));
 
     const askedId = prompt("Copy and paste the id of the customer you would like to update here: ")
     console.log(`# user inputs ${askedId}`);
@@ -96,25 +97,32 @@ const updateCustomer = async () => {
         },
         { new: true }
     );
+    console.log("updating...");
 
-    console.log("updated Customer: ", updatedCustomer) // viewing updated customers
+    setTimeout(() => {
+        console.log(`\nUpdated Customer:\nid: ${updatedCustomer._id} -- Name: ${updatedCustomer.name}, Age: ${updatedCustomer.age}`) // viewing updated customers
+    }, 1000);
 
-    setTimeout(async () => { await menu(); }, 1000); // choose next action
+    setTimeout(async () => { await menu(); }, 2000); // choose next action
 
 }
 
 const deleteCustomer = async () => {
     const customers = await Customer.find({});
-    console.log(`Below is a list of of customers:
-        ${customers} 
-        `);
+    customers.forEach(customer => console.log(`
+        id: ${customer._id} -- Name: ${customer.name}, Age: ${customer.age}`));
 
     const askedId = prompt("Copy and paste the id of the customer you would like to delete here: ")
     console.log(`# user inputs ${askedId}`);
 
-    const removedCustomer = await Customer.findByIdAndDelete(askedId);
+    console.log("deleting...");
 
-    setTimeout(async () => { await menu(); }, 1000); // choose next action
+    const removedCustomer = await Customer.findByIdAndDelete(askedId);
+    setTimeout(() => {
+        console.log(`\nDeleted customer:\n\nid: ${removedCustomer._id} -- Name: ${removedCustomer.name}, Age: ${removedCustomer.age}`);
+    })
+
+    setTimeout(async () => { await menu(); }, 2000); // choose next action
 }
 
 connect();
